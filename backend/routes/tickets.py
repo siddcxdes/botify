@@ -9,8 +9,6 @@ router = APIRouter()
 
 @router.get("/tickets", response_model=list[TicketResponse])
 def get_all_tickets(db: Session = Depends(get_db)):
-    """get all tickets, newest first"""
-
     tickets = db.query(SupportTicket).order_by(
         SupportTicket.created_at.desc()
     ).all()
@@ -19,8 +17,6 @@ def get_all_tickets(db: Session = Depends(get_db)):
 
 @router.get("/tickets/{ticket_id}", response_model=TicketResponse)
 def get_ticket(ticket_id: int, db: Session = Depends(get_db)):
-    """get one ticket by its id"""
-
     ticket = db.query(SupportTicket).filter(SupportTicket.id == ticket_id).first()
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
@@ -29,13 +25,10 @@ def get_ticket(ticket_id: int, db: Session = Depends(get_db)):
 
 @router.put("/tickets/{ticket_id}", response_model=TicketResponse)
 def update_ticket(ticket_id: int, update: TicketUpdate, db: Session = Depends(get_db)):
-    """change the status of a ticket (admin use)"""
-
     ticket = db.query(SupportTicket).filter(SupportTicket.id == ticket_id).first()
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
 
-    # make sure they give a valid status
     allowed = ["open", "in_progress", "closed"]
     if update.status not in allowed:
         raise HTTPException(status_code=400, detail="Status must be: open, in_progress, or closed")
@@ -48,8 +41,6 @@ def update_ticket(ticket_id: int, update: TicketUpdate, db: Session = Depends(ge
 
 @router.delete("/tickets/{ticket_id}")
 def delete_ticket(ticket_id: int, db: Session = Depends(get_db)):
-    """delete a ticket"""
-
     ticket = db.query(SupportTicket).filter(SupportTicket.id == ticket_id).first()
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
