@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - AI Support</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+    <!-- ======== NAVBAR ======== -->
+    <nav class="navbar">
+        <a href="/" class="brand">✦ smart support</a>
+        <ul class="nav-links">
+            <li><a href="/">Chat</a></li>
+            <li><a href="/admin">Admin Panel</a></li>
+            <li><a href="/docs" target="_blank">API Docs</a></li>
+        </ul>
+    </nav>
+
+    <!-- ======== ADMIN AREA ======== -->
+    <div class="admin-container">
+
+        <div class="admin-header">
+            <h1>Admin Dashboard</h1>
+            <button class="action-btn progress" onclick="loadTickets()" style="padding: 10px 20px; font-size: 0.9rem;">
+                ↻ Refresh
+            </button>
+        </div>
+
+        <!-- stats cards -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="number" id="totalTickets">0</div>
+                <div class="label">Total Tickets</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="openTickets">0</div>
+                <div class="label">Open Tickets</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="closedTickets">0</div>
+                <div class="label">Closed Tickets</div>
+            </div>
+        </div>
+
+        <!-- tickets table -->
+        <div class="tickets-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Customer Email</th>
+                        <th>Question</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="ticketsBody">
+                    <!-- tickets will be loaded here -->
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px; color: #aaa;">
+                            Loading tickets...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- ======== FOOTER ======== -->
+    <footer class="footer">
+        <p>Admin Panel — AI Customer Support System</p>
+    </footer>
+
+
+    <!-- ======== JAVASCRIPT ======== -->
+    <script>
+        // load tickets when page opens
+        window.onload = function() {
+            loadTickets();
+        };
+
+        // fetch all tickets from backend
+        function loadTickets() {
+            fetch("/api/tickets")
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(tickets) {
+                    displayTickets(tickets);
+                    updateStats(tickets);
+                })
+                .catch(function(error) {
+                    console.error("Error loading tickets:", error);
+                });
+        }
+
+        // show tickets in the table
+        function displayTickets(tickets) {
+            let tbody = document.getElementById("ticketsBody");
+
+            if (tickets.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #aaa;">No tickets yet. All quiet! 🎉</td></tr>';
+                return;
+            }
+
+            let html = "";
+
+            for (let i = 0; i < tickets.length; i++) {
+                let ticket = tickets[i];
+                let date = new Date(ticket.created_at).toLocaleDateString();
+
+                // shorten the question if it's too long
+                let shortQuestion = ticket.question;
+                if (shortQuestion.length > 50) {
+                    shortQuestion = shortQuestion.substring(0, 50) + "...";
+                }
+
+                // pick badge class based on status
+                let badgeClass = ticket.status;
+                let statusText = ticket.status.replace("_", " ");
+
+                html += "<tr>";
+                html += "<td>#" + ticket.id + "</td>";
+                html += "<td>" + ticket.user_email + "</td>";
+                html += '<td title="' + ticket.question + '">' + shortQuestion + "</td>";
+                html += '<td><span class="badge ' + badgeClass + '">' + statusText + "</span></td>";
+                html += "<td>" + date + "</td>";
+                html += "<td>";
+
+                // show different buttons based on status
+                if (ticket.status === "open") {
+                    html += '<button class="action-btn progress" onclick="updateStatus(' + ticket.id + ', \'in_progress\')">Mark In Progress</button>';
+                }
+                if (ticket.status !== "closed") {
+                    html += '<button class="action-btn close-btn" onclick="updateStatus(' + ticket.id + ', \'closed\')">Close</button>';
+                }
+                html += '<button class="action-btn delete" onclick="deleteTicket(' + ticket.id + ')">Delete</button>';
+
+                html += "</td>";
+                html += "</tr>";
+            }
+
+            tbody.innerHTML = html;
+        }
+
+        // update the stat cards at the top
+        function updateStats(tickets) {
+            let total = tickets.length;
+            let open = 0;
+            let closed = 0;
+
+            for (let i = 0; i < tickets.length; i++) {
+                if (tickets[i].status === "open") open++;
+                if (tickets[i].status === "closed") closed++;
+            }
+
+            document.getElementById("totalTickets").textContent = total;
+            document.getElementById("openTickets").textContent = open;
+            document.getElementById("closedTickets").textContent = closed;
+        }
+
+        // change ticket status
+        function updateStatus(ticketId, newStatus) {
+            fetch("/api/tickets/" + ticketId, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: newStatus })
+            })
+            .then(function() {
+                loadTickets(); // reload the table
+            })
+            .catch(function(error) {
+                alert("Failed to update ticket");
+                console.error(error);
+            });
+        }
+
+        // delete a ticket
+        function deleteTicket(ticketId) {
+            let confirmed = confirm("Are you sure you want to delete ticket #" + ticketId + "?");
+            if (!confirmed) return;
+
+            fetch("/api/tickets/" + ticketId, {
+                method: "DELETE"
+            })
+            .then(function() {
+                loadTickets(); // reload the table
+            })
+            .catch(function(error) {
+                alert("Failed to delete ticket");
+                console.error(error);
+            });
+        }
+    </script>
+
+</body>
+</html>
