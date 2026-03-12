@@ -1,10 +1,10 @@
-# 🤖 AI Chatbot Portfolio — RAG-Powered Demo
+# AI Chatbot Portfolio — RAG-Powered Demo
 
 A full-stack web application showcasing three AI-powered chatbots (Law Firm, Real Estate, Dental Clinic) built with **FastAPI**, **LangChain**, **Google Gemini 2.5 Flash**, and **FAISS** vector search.
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Clone the project
 
@@ -31,10 +31,11 @@ pip install -r requirements.txt
 
 ### 3. Add your Gemini API key
 
-Open `backend/.env` and replace the placeholder:
+Copy `backend/.env.example` to `backend/.env` and set your key:
 
 ```
 GEMINI_API_KEY=your_actual_gemini_api_key
+ALLOWED_ORIGINS=http://localhost:3000
 ```
 
 > Get a free API key from [Google AI Studio](https://aistudio.google.com/apikey)
@@ -61,6 +62,25 @@ The API will be live at `http://localhost:8000`
 ### 6. Open the frontend
 
 Open `frontend/index.html` directly in your browser, or use **Live Server** in VS Code.
+
+---
+
+## 🚢 Production deployment (Render + Vercel)
+
+**Backend (Render):**
+- Deploy the `backend/` folder as a web service.
+- Environment variables:
+  - `GEMINI_API_KEY` (required)
+  - `ALLOWED_ORIGINS=https://your-frontend.vercel.app` (comma-separated if multiple)
+
+**Frontend (Vercel):**
+- Deploy the `frontend/` folder.
+- The included `frontend/vercel.json` rewrites `/api/*` to your Render backend. Update the destination URL if needed.
+- No env vars are required on Vercel.
+
+**How calls flow:**
+- In production, the frontend calls `/api/chat`; Vercel rewrites to `https://your-render-service.onrender.com/chat`.
+- In local dev, the frontend detects `localhost` and calls `http://localhost:8000` directly.
 
 ---
 

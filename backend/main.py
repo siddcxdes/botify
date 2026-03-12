@@ -13,17 +13,27 @@ from pydantic import BaseModel
 
 from rag.chain import chat
 
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    raise RuntimeError("GEMINI_API_KEY is not set. Add it to your environment before starting the server.")
+
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "*")
+if allowed_origins_env.strip() == "*":
+    allow_origins = ["*"]
+else:
+    allow_origins = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()]
+
 app = FastAPI(
     title="AI Chatbot Portfolio API",
     description="Backend for the RAG-powered chatbot portfolio demo",
     version="1.0.0",
 )
 
-# Enable CORS for frontend access
+# Enable CORS for frontend access (lock down in production via ALLOWED_ORIGINS)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=allow_origins,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

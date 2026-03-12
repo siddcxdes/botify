@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.venv/
+venv/
+.env
+.env.local
+.env.*
+
+# OS
+.DS_Store
+
+# Node / Frontend
+node_modules/
+.vercel/
+
+# Other
+*.log

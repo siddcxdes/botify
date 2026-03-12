@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://newproject-zqkp.onrender.com/$1"
+    }
+  ]
+}

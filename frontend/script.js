@@ -1,5 +1,14 @@
 // Backend base URL (Render)
-const API_URL = 'https://newproject-zqkp.onrender.com';
+// Backend base URL
+// - In production (Vercel), requests go to "/api" and are rewritten to Render via vercel.json
+// - In local dev, use the FastAPI server on localhost:8000
+const API_URL = (() => {
+    const origin = window.location.origin;
+    if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+        return 'http://localhost:8000';
+    }
+    return '/api';
+})();
 
 /* ============ AUTO-DEMO SCRIPTS ============ */
 const autoScripts = {
