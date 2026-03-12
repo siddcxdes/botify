@@ -1,4 +1,5 @@
-const API_URL = 'http://localhost:8000';
+// Backend base URL (Render)
+const API_URL = 'https://newproject-zqkp.onrender.com';
 
 /* ============ AUTO-DEMO SCRIPTS ============ */
 const autoScripts = {
