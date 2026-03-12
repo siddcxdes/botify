@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://newproject-zqkp.onrender.com/$1"
+      "destination": "https://botify-vaoa.onrender.com/$1"
     }
   ]
 }

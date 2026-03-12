@@ -68,14 +68,15 @@ Open `frontend/index.html` directly in your browser, or use **Live Server** in V
 ## 🚢 Production deployment (Render + Vercel)
 
 **Backend (Render):**
-- Deploy the `backend/` folder as a web service.
+- If using Docker (recommended), Render will build from the repo root using the provided `Dockerfile`.
+- If using Render native build, set the root to `backend/`, build command `pip install -r requirements.txt`, start command `uvicorn main:app --host 0.0.0.0 --port $PORT`.
 - Environment variables:
   - `GEMINI_API_KEY` (required)
   - `ALLOWED_ORIGINS=https://your-frontend.vercel.app` (comma-separated if multiple)
 
 **Frontend (Vercel):**
 - Deploy the `frontend/` folder.
-- The included `frontend/vercel.json` rewrites `/api/*` to your Render backend. Update the destination URL if needed.
+- The included `frontend/vercel.json` rewrites `/api/*` to your Render backend. It is currently set to `https://botify-vaoa.onrender.com`; update if your Render URL changes.
 - No env vars are required on Vercel.
 
 **How calls flow:**
