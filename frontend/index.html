@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Botify — AI Website Assistant</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23111' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z'/></svg>" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-page: #fafafa;
+            --bg-card: #ffffff;
+            --border-color: #e5e7eb;
+            --border-hover: #d1d5db;
+            
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+
+            --primary-action: #111827;
+            --primary-action-text: #ffffff;
+
+            /* Law = warm peach */
+            --law-accent: #fcd34d;
+            --law-bubble-user: #fef08a;
+            --law-bubble-bot: #f9fafb;
+            
+            /* Estate = mint green */
+            --estate-accent: #86efac;
+            --estate-bubble-user: #bbf7d0;
+            --estate-bubble-bot: #f9fafb;
+
+            /* Dental = sky blue */
+            --dental-accent: #7dd3fc;
+            --dental-bubble-user: #bae6fd;
+            --dental-bubble-bot: #f9fafb;
+
+            --font-heading: 'Bricolage Grotesque', sans-serif;
+            --font-body: 'Outfit', sans-serif;
+
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-page);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* ============ NAVBAR ============ */
+        .navbar-wrapper {
+            position: fixed;
+            top: 1.5rem;
+            left: 0; width: 100%;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            padding: 0 1.5rem;
+        }
+
+        .navbar {
+            background: #ffffff;
+            max-width: 1100px;
+            width: 100%;
+            border-radius: 50px;
+            padding: 0.8rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .navbar .logo {
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 1.4rem;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .navbar .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar .nav-links a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: color 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        
+        .navbar .nav-links a svg { width: 14px; height: 14px; opacity: 0.6; }
+
+        .navbar .nav-links a:hover {
+            color: var(--text-primary);
+            text-shadow: 0 0 1px rgba(0,0,0,0.2);
+        }
+
+        .navbar .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .nav-actions .sign-in {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        .nav-actions .sign-in:hover { color: var(--text-primary); }
+
+        .btn-dark {
+            background: #0f1523;
+            color: var(--primary-action-text);
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        .btn-dark:hover {
+            background: #000;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .btn-outline {
+            background: #ffffff;
+            color: var(--text-primary);
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .btn-outline:hover {
+            border-color: #d1d5db;
+            background: #f9fafb;
+            transform: translateY(-1px);
+        }
+
+        /* ============ COMMON ============ */
+        section { position: relative; z-index: 1; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+
+        .reveal {
+            opacity: 0; transform: translateY(30px);
+            transition: opacity 0.8s var(--ease-out-expo), transform 0.8s var(--ease-out-expo);
+        }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        /* ============ HERO ============ */
+        .hero {
+            padding: 11rem 2rem 5rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        
+        .hero-badge svg { width: 14px; height: 14px; }
+
+        .hero h1 {
+            font-family: var(--font-heading);
+            font-size: clamp(2.8rem, 6vw, 4.2rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            color: #111111;
+            letter-spacing: -1px;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 650px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.6;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 4rem;
+        }
+
+        /* ============ CARDS SECTION (How it works mapped to reference) ============ */
+        .steps-wrapper {
+            margin-bottom: 6rem;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .step-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 2.5rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+            text-align: left;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .step-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+            border-color: var(--border-hover);
+        }
+
+        .step-badge {
+            display: inline-flex;
+            background: #f3f4f6;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+        }
+
+        .step-card h3 {
+            font-family: var(--font-heading);
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.8rem;
+            line-height: 1.3;
+        }
+
+        .step-card p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.5;
+            margin-bottom: 2rem;
+        }
+
+        /* Mock diagrams in step cards */
+        .step-illustration {
+            margin-top: auto;
+            border-radius: 12px;
+            background: #f9fafb;
+            border: 1px solid #f3f4f6;
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Illus 1: Documents */
+        .illus-doc {
+            width: 40px; height: 50px; background: white; border: 2px solid #e5e7eb; border-radius: 4px;
+            position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transform: rotate(-5deg); z-index: 2; left: 10px;
+        }
+        .illus-doc::after { content: ''; position: absolute; top: 10px; left: 6px; width: 20px; height: 3px; background: #e5e7eb; border-radius: 2px; box-shadow: 0 8px 0 #e5e7eb, 0 16px 0 #e5e7eb; }
+        .illus-doc2 {
+            width: 40px; height: 50px; background: white; border: 2px solid #e5e7eb; border-radius: 4px;
+            position: absolute; transform: rotate(8deg); right: 35px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); z-index: 1;
+        }
+
+        /* Illus 2: Widget */
+        .illus-widget {
+            width: 80%; height: 70%; background: white; border: 2px solid #e5e7eb; border-radius: 8px 8px 0 0;
+            position: absolute; bottom: 0; padding: 10px;
+        }
+        .illus-bubble { width: 40px; height: 40px; background: #111; border-radius: 50%; position: absolute; bottom: 10px; right: 10px; display: flex; align-items: center; justify-content: center; color: white;}
+
+        /* Illus 3: Lead Capture */
+        .illus-chat {
+            width: 90%; height: 80%;
+            display: flex; flex-direction: column; gap: 8px; justify-content: flex-end; padding-bottom: 10px;
+        }
+        .illus-msg { height: 20px; border-radius: 10px; background: #e5e7eb; }
+        .illus-msg.left { width: 60%; border-bottom-left-radius: 2px; align-self: flex-start; }
+        .illus-msg.right { width: 50%; border-bottom-right-radius: 2px; align-self: flex-end; background: #111; }
+        .illus-msg.lead { width: 80%; height: 40px; border-radius: 8px; border: 1px dashed #9ca3af; background: white; align-self: flex-start; display: flex; align-items: center; padding: 0 10px; font-size: 8px; color: #9ca3af; font-family: var(--font-mono); }
+
+        /* ============ DOMAINS SELECTION ============ */
+        .demo-heading {
+            text-align: center;
+            font-family: var(--font-heading);
+            font-size: 3rem;
+            margin-top: 4rem;
+            margin-bottom: 3rem;
+            font-weight: 800;
+            color: #111;
+        }
+        .domain-cards {
+            display: flex; gap: 1rem; justify-content: center;
+            margin-bottom: 4rem; flex-wrap: wrap;
+        }
+        .domain-card {
+            background: #ffffff;
+            border-radius: 50px; padding: 1rem 2.5rem;
+            border: 1px solid #e5e7eb;
+            cursor: pointer; transition: all 0.2s ease;
+            font-weight: 700; font-size: 1.05rem;
+            color: #6b7280;
+        }
+        .domain-card:hover {
+            border-color: #111; color: #111;
+        }
+        .domain-card.active {
+            background: #111; color: #fff; border-color: #111;
+        }
+
+        /* ============ DEMO SECTION ============ */
+        .demo-section { padding: 0 0 6rem; }
+        .demo-inner {
+            display: none;
+            max-width: 480px; /* Reduced to look like a realistic widget */
+            margin: 0 auto;
+        }
+        .demo-inner.visible {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ============ CHAT ============ */
+        .chat-window {
+            background: #ffffff;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+            overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+        .chat-header {
+            padding: 1.2rem 1.5rem;
+            display: flex; align-items: center; gap: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            background: #fafafa;
+        }
+        .chat-header-avatar {
+            width: 48px; height: 48px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; font-family: var(--font-heading); font-weight: 700;
+            border-radius: 12px;
+            background: #f3f4f6; color: var(--text-primary);
+        }
+        .chat-header-info h4 {
+            font-family: var(--font-heading); font-size: 1.1rem; font-weight: 700;
+            color: var(--text-primary); margin-bottom: 0.1rem;
+        }
+        .chat-header-info .status {
+            display: flex; align-items: center; gap: 0.4rem;
+            font-size: 0.8rem; color: var(--text-muted); font-weight: 500;
+        }
+        .status-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #10b981; /* Green */
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+        }
+        .chat-messages {
+            height: 520px; /* Make it taller to offset reduced width */
+            overflow-y: auto; padding: 1.5rem;
+            display: flex; flex-direction: column; gap: 1rem;
+            scroll-behavior: smooth; background: #ffffff;
+        }
+        .chat-messages::-webkit-scrollbar { width: 6px; }
+        .chat-messages::-webkit-scrollbar-track { background: transparent; }
+        .chat-messages::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }
+
+        .chat-bubble {
+            max-width: 80%; padding: 0.9rem 1.2rem;
+            font-size: 0.95rem; line-height: 1.5;
+            animation: bubbleIn 0.3s var(--ease-out-expo);
+        }
+        @keyframes bubbleIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .chat-bubble.bot {
+            align-self: flex-start; color: var(--text-primary);
+            border-radius: 24px 24px 24px 4px; border: 1px solid #efefef;
+            background: #ffffff;
+        }
+        .chat-bubble.user {
+            align-self: flex-end; font-weight: 600; color: #111;
+            border-radius: 24px 24px 4px 24px;
+            background: #f3f4f6;
+        }
+
+        .typing-indicator {
+            align-self: flex-start; display: flex; gap: 4px;
+            padding: 1rem 1.2rem; border-radius: 20px 20px 20px 4px;
+            background: #f9fafb; border: 1px solid #efefef;
+        }
+        .typing-indicator .dot {
+            width: 6px; height: 6px; border-radius: 50%; background: #9ca3af;
+            animation: typingBounce 1.4s infinite;
+        }
+        .typing-indicator .dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator .dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+            30% { transform: translateY(-4px); opacity: 1; }
+        }
+
+        .chat-input-area {
+            padding: 1rem 1.5rem;
+            display: flex; gap: 0.8rem; align-items: center;
+            border-top: 1px solid var(--border-color);
+            background: #ffffff;
+        }
+        .chat-input {
+            flex: 1; border-radius: 50px;
+            padding: 0.8rem 1.2rem;
+            color: var(--text-primary); font-family: var(--font-body);
+            font-size: 0.95rem; outline: none;
+            background: #f9fafb; border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .chat-input::placeholder { color: var(--text-muted); }
+        .chat-input:focus { border-color: var(--border-hover); background: #fff; }
+        .chat-input:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .send-btn {
+            width: 44px; height: 44px; border-radius: 50%; border: none;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; transition: all 0.2s ease;
+            background: var(--text-primary); color: #fff;
+        }
+        .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .send-btn:not(:disabled):hover { transform: scale(1.05); }
+
+        /* Domain specific redesigns - Subtle accents matching the light theme */
+        
+        /* Law Firm - Warm Peach Accent */
+        #chat-lawfirm .chat-header-avatar { background: #fef08a; color: #78350f; border-radius: 12px; }
+        #chat-lawfirm .chat-bubble.user { background: #fef08a; color: #78350f; border: none; }
+        #chat-lawfirm .status-dot { background: #f59e0b; box-shadow: none; }
+        #chat-lawfirm .send-btn { background: #f59e0b; color: #fff; }
+
+        /* Real Estate - Fresh Mint Accent */
+        #chat-realestate .chat-header-avatar { background: #bbf7d0; color: #064e3b; border-radius: 12px; }
+        #chat-realestate .chat-bubble.user { background: #bbf7d0; color: #064e3b; border: none; }
+        #chat-realestate .status-dot { background: #10b981; box-shadow: none; }
+        #chat-realestate .send-btn { background: #10b981; color: #fff; }
+
+        /* Dental Clinic - Clean Sky Blue Accent */
+        #chat-dental .chat-header-avatar { background: #bae6fd; color: #0c4a6e; border-radius: 12px; }
+        #chat-dental .chat-bubble.user { background: #bae6fd; color: #0c4a6e; border: none; }
+        #chat-dental .status-dot { background: #0ea5e9; box-shadow: none; }
+        #chat-dental .send-btn { background: #0ea5e9; color: #fff; }
+
+        /* ============ FOOTER / CTA ============ */
+        .cta-section {
+            padding: 6rem 0; text-align: center;
+            background: #ffffff;
+            border-top: 1px solid var(--border-color);
+        }
+        .cta-section h2 {
+            font-family: var(--font-heading); font-size: 2.5rem;
+            font-weight: 800; margin-bottom: 1rem; color: #111;
+        }
+        .cta-section p {
+            color: var(--text-secondary); font-size: 1.1rem;
+            max-width: 500px; margin: 0 auto 2rem;
+        }
+
+        /* ============ POPUP MESSENGER ============ */
+        .messenger-widget {
+            position: fixed; bottom: 30px; right: 30px; z-index: 9999;
+            display: flex; flex-direction: column; align-items: flex-end; gap: 14px;
+            pointer-events: none;
+        }
+        .messenger-chatbox {
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            border: 1px solid #efefef;
+            width: 320px;
+            overflow: hidden;
+            transform: scale(0.9) translateY(20px);
+            opacity: 0; pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-origin: bottom right;
+            display: flex; flex-direction: column;
+        }
+        .messenger-chatbox.show {
+            transform: scale(1) translateY(0); opacity: 1; pointer-events: auto;
+        }
+        
+        .mc-header {
+            background: #0f1523; color: #fff;
+            padding: 1.2rem; display: flex; align-items: center; gap: 0.8rem;
+        }
+        .mc-avatar {
+            width: 40px; height: 40px; background: #2dd4bf; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; color: #064e3b; font-weight: bold;
+        }
+        .mc-header-info h4 { font-family: var(--font-heading); margin: 0; font-size: 1.1rem; }
+        .mc-header-info p { margin: 0; font-size: 0.8rem; opacity: 0.8; }
+        
+        .mc-body {
+            padding: 1.5rem; background: #fdfdfd; display: flex; flex-direction: column; gap: 1rem;
+        }
+        .mc-message {
+            background: #f3f4f6; color: #111; padding: 1rem;
+            border-radius: 16px 16px 16px 4px; font-size: 0.95rem; line-height: 1.5;
+            align-self: flex-start; max-width: 90%;
+        }
+        .mc-footer {
+            padding: 1rem; background: #fff; border-top: 1px solid #efefef;
+        }
+        .mc-action-btn {
+            display: flex; justify-content: center; align-items: center; gap: 0.5rem;
+            background: #111; color: #fff; text-decoration: none;
+            padding: 0.8rem 1rem; border-radius: 12px; font-weight: 600; font-size: 0.95rem;
+            transition: all 0.2s ease; width: 100%;
+        }
+        .mc-action-btn:hover { background: #333; transform: translateY(-1px); }
+
+        .messenger-btn {
+            width: 60px; height: 60px; border-radius: 50%;
+            background: #0f1523; color: #fff; border: none;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            cursor: pointer; pointer-events: auto;
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.3s ease; z-index: 10;
+        }
+        .messenger-btn:hover { transform: scale(1.08); }
+        .messenger-btn svg { transition: transform 0.3s ease; }
+        .messenger-btn.open svg { transform: rotate(180deg); opacity: 0; }
+        .messenger-btn .close-icon { position: absolute; opacity: 0; transform: rotate(-180deg); }
+        .messenger-btn.open .close-icon { opacity: 1; transform: rotate(0deg); }
+
+        @media (max-width: 900px) {
+            .steps-grid { grid-template-columns: 1fr; }
+            .navbar .nav-links, .nav-actions .sign-in { display: none; }
+            .hero h1 { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Floating Navbar like Cal.com -->
+    <div class="navbar-wrapper">
+        <nav class="navbar">
+            <div class="logo">Botify</div>
+            <ul class="nav-links">
+                <li><a href="#hero">Home</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#demo">Demos</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a href="mailto:sidheshwarsharma77@gmail.com" class="btn-dark">Get in touch <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="hero-badge">
+            <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" fill="none" stroke-width="2"/></svg>
+            How it works
+        </div>
+        <h1>
+            AI Website Assistant That Answers<br/>Client Questions and Captures Leads
+        </h1>
+        <p>
+            Effortless lead generation for businesses and powerful AI solutions for fast-growing modern companies.
+        </p>
+        <div class="hero-actions">
+            <a href="#how-it-works" class="btn-dark">Get a Free Demo for Your Website <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        </div>
+    </section>
+
+    <!-- Cal.com style step cards -->
+    <section class="steps-wrapper" id="how-it-works">
+        <div class="container">
+            <div class="steps-grid reveal">
+                <div class="step-card">
+                    <div class="step-badge">01</div>
+                    <h3>Train your AI agent</h3>
+                    <p>We'll handle the document and website scanning, so your AI knows everything about your business instantly.</p>
+                    <div class="step-illustration">
+                        <div class="illus-doc"></div>
+                        <div class="illus-doc2"></div>
+                    </div>
+                </div>
+                <div class="step-card">
+                    <div class="step-badge">02</div>
+                    <h3>Install the widget</h3>
+                    <p>Want to capture leads? Add our simple script to your site. It works flawlessly with any builder.</p>
+                    <div class="step-illustration">
+                        <div class="illus-widget">
+                            <div style="width: 40%; height: 6px; background: #e5e7eb; border-radius: 4px; margin-bottom: 8px;"></div>
+                            <div style="width: 70%; height: 6px; background: #f3f4f6; border-radius: 4px; margin-bottom: 4px;"></div>
+                            <div style="width: 60%; height: 6px; background: #f3f4f6; border-radius: 4px;"></div>
+                            <div class="illus-bubble"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="step-card">
+                    <div class="step-badge">03</div>
+                    <h3>Close more deals</h3>
+                    <p>It acts like your 24/7 employee. It answers visitor questions instantly and schedules consultations.</p>
+                    <div class="step-illustration">
+                        <div class="illus-chat">
+                            <div class="illus-msg left"></div>
+                            <div class="illus-msg right"></div>
+                            <div class="illus-msg left"></div>
+                            <div class="illus-msg lead">Name, Email, Phone...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Live Demo Switcher -->
+    <section class="demo-section" id="demo">
+        <div class="container reveal">
+            <h2 class="demo-heading">Experience the AI</h2>
+            
+            <div class="domain-cards">
+                <div class="domain-card active" onclick="switchDemo('lawfirm', this)">Law Firm</div>
+                <div class="domain-card" onclick="switchDemo('realestate', this)">Real Estate</div>
+                <div class="domain-card" onclick="switchDemo('dental', this)">Dental Clinic</div>
+            </div>
+
+            <!-- Law Firm Chat -->
+            <div class="demo-inner visible" id="demo-lawfirm">
+                <div class="chat-window" id="chat-lawfirm">
+                    <div class="chat-header">
+                        <div class="chat-header-avatar">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="m3 14 9-4 9 4"/><path d="M6 14v4a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-4"/><path d="M3 20h18"/><path d="M8 6h8"/></svg>
+                        </div>
+                        <div class="chat-header-info">
+                            <h4>LexBot — Legal Assistant</h4>
+                            <div class="status"><span class="status-dot"></span> Online</div>
+                        </div>
+                    </div>
+                    <div class="chat-messages" id="messages-lawfirm"></div>
+                    <div class="chat-input-area">
+                        <input type="text" class="chat-input" id="input-lawfirm" placeholder="Ask LexBot anything..." disabled />
+                        <button class="send-btn" id="send-lawfirm" onclick="sendMessage('lawfirm')" disabled>&uarr;</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real Estate Chat -->
+            <div class="demo-inner" id="demo-realestate">
+                <div class="chat-window" id="chat-realestate">
+                    <div class="chat-header">
+                        <div class="chat-header-avatar">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        </div>
+                        <div class="chat-header-info">
+                            <h4>EstateAI — Property Advisor</h4>
+                            <div class="status"><span class="status-dot"></span> Online</div>
+                        </div>
+                    </div>
+                    <div class="chat-messages" id="messages-realestate"></div>
+                    <div class="chat-input-area">
+                        <input type="text" class="chat-input" id="input-realestate" placeholder="Ask EstateAI anything..." disabled />
+                        <button class="send-btn" id="send-realestate" onclick="sendMessage('realestate')" disabled>&uarr;</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dental Chat -->
+            <div class="demo-inner" id="demo-dental">
+                <div class="chat-window" id="chat-dental">
+                    <div class="chat-header">
+                        <div class="chat-header-avatar">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10c0-1.7-1.3-3-3-3s-3 1.3-3 3"/><path d="M22 17c0-3.3-2.7-6-6-6h-8c-3.3 0-6 2.7-6 6v3c0 1.1.9 2 2 2h2c1.1 0 2-.9 2-2v-2c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v2c0 1.1.9 2 2 2h2c1.1 0 2-.9 2-2v-3Z"/></svg>
+                        </div>
+                        <div class="chat-header-info">
+                            <h4>DentaBot — Support</h4>
+                            <div class="status"><span class="status-dot"></span> Online</div>
+                        </div>
+                    </div>
+                    <div class="chat-messages" id="messages-dental"></div>
+                    <div class="chat-input-area">
+                        <input type="text" class="chat-input" id="input-dental" placeholder="Ask DentaBot anything..." disabled />
+                        <button class="send-btn" id="send-dental" onclick="sendMessage('dental')" disabled>&uarr;</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer CTA -->
+    <section class="cta-section">
+        <div class="container reveal">
+            <h2>Ready to automate?</h2>
+            <p>I can create a free custom demo trained on your website data in less than 24 hours.</p>
+            <a href="mailto:sidheshwarsharma77@gmail.com" class="btn-dark">Request Demo</a>
+        </div>
+    </section>
+
+    <!-- Popup Messenger -->
+    <div class="messenger-widget">
+        <div class="messenger-chatbox" id="messengerBox">
+            <div class="mc-header">
+                <div class="mc-avatar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                </div>
+                <div class="mc-header-info">
+                    <h4>AI Consultant</h4>
+                    <p>Typically replies instantly</p>
+                </div>
+            </div>
+            <div class="mc-body">
+                <div class="mc-message">
+                    Want a chatbot like this on your website?
+                    <br><br>
+                    I can create a free demo trained on your site.
+                </div>
+            </div>
+            <div class="mc-footer">
+                <a href="mailto:sidheshwarsharma77@gmail.com" class="mc-action-btn">
+                    Let's Start 
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+            </div>
+        </div>
+        <button class="messenger-btn" id="mToggleBtn" onclick="toggleMessenger()">
+            <!-- Chat Icon -->
+            <svg class="chat-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <!-- Close (X) Icon -->
+            <svg class="close-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+
+        const autoScripts = {
+            lawfirm: {
+                greeting: "Hi! I'm LexBot, your legal assistant. I can answer questions about our firm, services, and legal procedures.",
+                exchanges: [{
+                    user: "What areas of law does your firm specialize in?",
+                    bot: "Our firm specializes in corporate law, family law, criminal defense, and contract disputes. We offer free initial consultations. Would you like to schedule one?"
+                }, {
+                    user: "Yes, please.",
+                    bot: "Great! Please provide your **Name, Email, and Phone number** to lock in your appointment."
+                }]
+            },
+            realestate: {
+                greeting: "Hello! I'm EstateAI, your property guide. Ask me about listings, the buying process, or anything real estate.",
+                exchanges: [{
+                    user: "Do you have any 3BHK properties under 80 lakhs?",
+                    bot: "Yes! We currently have several 3BHK options in that range. Most come with covered parking and society amenities. Would you like to schedule a property visit?"
+                }]
+            },
+            dental: {
+                greeting: "Hi there! I'm DentaBot. I can help you with appointment info, treatment options, and clinic details.",
+                exchanges: [{
+                    user: "Do you offer teeth whitening and what does it cost?",
+                    bot: "Yes, we offer professional LED whitening sessions starting from just ₹2,500. Results are visible in one sitting! Want to book a free consultation?"
+                }]
+            }
+        };
+
+        const state = {
+            lawfirm:    { history: [], demoPlayed: false, demoRunning: false },
+            realestate: { history: [], demoPlayed: false, demoRunning: false },
+            dental:     { history: [], demoPlayed: false, demoRunning: false },
+        };
+
+        let activeDomain = 'lawfirm';
+
+        function typeWriter(el, text, speed = 15) {
+            return new Promise(resolve => {
+                let i = 0; el.innerHTML = ''; // use innerHTML for bold parsing if needed eventually, but textContent is safer.
+                const box = el.closest('.chat-messages');
+                (function type() {
+                    if (i < text.length) {
+                        el.textContent += text.charAt(i); i++;
+                        if (box) box.scrollTop = box.scrollHeight;
+                        setTimeout(type, speed);
+                    } else resolve();
+                })();
+            });
+        }
+
+        function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+        function addBubble(domain, role, text, typeEffect = false) {
+            const container = document.getElementById(`messages-${domain}`);
+            const bubble = document.createElement('div');
+            bubble.classList.add('chat-bubble', role);
+            container.appendChild(bubble);
+            container.scrollTop = container.scrollHeight;
+            if (typeEffect) return typeWriter(bubble, text);
+            bubble.textContent = text;
+            container.scrollTop = container.scrollHeight;
+            return Promise.resolve();
+        }
+
+        function showTypingIndicator(domain) {
+            const container = document.getElementById(`messages-${domain}`);
+            const ind = document.createElement('div');
+            ind.classList.add('typing-indicator'); ind.id = `typing-${domain}`;
+            ind.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+            container.appendChild(ind);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function removeTypingIndicator(domain) {
+            const el = document.getElementById(`typing-${domain}`);
+            if (el) el.remove();
+        }
+
+        function enableInput(domain) {
+            document.getElementById(`input-${domain}`).disabled = false;
+            document.getElementById(`send-${domain}`).disabled = false;
+        }
+
+        async function runAutoDemo(domain) {
+            if (state[domain].demoPlayed || state[domain].demoRunning) return;
+            state[domain].demoRunning = true;
+            const script = autoScripts[domain];
+
+            await delay(400);
+            showTypingIndicator(domain);
+            await delay(800);
+            removeTypingIndicator(domain);
+            await addBubble(domain, 'bot', script.greeting, true);
+
+            for (const ex of script.exchanges) {
+                await delay(1200);
+                await addBubble(domain, 'user', ex.user, true);
+                await delay(600);
+                showTypingIndicator(domain);
+                await delay(1400);
+                removeTypingIndicator(domain);
+                await addBubble(domain, 'bot', ex.bot, true);
+            }
+
+            state[domain].demoPlayed = true;
+            state[domain].demoRunning = false;
+            await delay(300);
+            enableInput(domain);
+        }
+
+        function switchDemo(domain, elBtn) {
+            activeDomain = domain;
+            // Handle active button class
+            document.querySelectorAll('.domain-card').forEach(c => c.classList.remove('active'));
+            if(elBtn) elBtn.classList.add('active');
+
+            // Show chosen dom
+            document.querySelectorAll('.demo-inner').forEach(d => d.classList.remove('visible'));
+            document.getElementById(`demo-${domain}`).classList.add('visible');
+
+            // Auto demo trigger
+            if (!state[domain].demoPlayed && !state[domain].demoRunning) {
+                runAutoDemo(domain);
+            }
+        }
+
+        async function sendMessage(domain) {
+            const input = document.getElementById(`input-${domain}`);
+            const message = input.value.trim();
+            if (!message) return;
+
+            input.value = ''; input.disabled = true;
+            document.getElementById(`send-${domain}`).disabled = true;
+
+            addBubble(domain, 'user', message);
+            state[domain].history.push({ role: 'user', content: message });
+
+            await delay(300);
+            showTypingIndicator(domain);
+
+            try {
+                const res = await fetch(`${API_URL}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ domain, message, history: state[domain].history })
+                });
+                const data = await res.json();
+                removeTypingIndicator(domain);
+                if (data.reply) {
+                    await addBubble(domain, 'bot', data.reply, true);
+                    state[domain].history.push({ role: 'assistant', content: data.reply });
+                } else {
+                    await addBubble(domain, 'bot', 'Sorry, something went wrong. Please try again.', true);
+                }
+            } catch (err) {
+                removeTypingIndicator(domain);
+                await addBubble(domain, 'bot', '⚠️ Cannot reach server. Run ./run.sh to start it.', true);
+            }
+            enableInput(domain);
+        }
+
+        // Enter key listeners
+        ['lawfirm', 'realestate', 'dental'].forEach(domain => {
+            const inp = document.getElementById(`input-${domain}`);
+            if (inp) inp.addEventListener('keydown', e => {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(domain); }
+            });
+        });
+
+        // Scroll reveal
+        const revealObs = new IntersectionObserver(entries => {
+            entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+        document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+        // Start initial demo
+        setTimeout(() => runAutoDemo('lawfirm'), 500);
+
+        // Popup Messenger logic
+        const mBox = document.getElementById('messengerBox');
+        const mToggleBtn = document.getElementById('mToggleBtn');
+        function toggleMessenger() {
+            mBox.classList.toggle('show');
+            mToggleBtn.classList.toggle('open');
+        }
+        setTimeout(() => {
+            if (!mBox.classList.contains('show')) {
+                toggleMessenger();
+            }
+        }, 3000); // Pops up after 3 seconds
+
+    </script>
+</body>
+</html>
