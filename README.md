@@ -139,3 +139,4 @@ smart-AI-chatbot/
 ## 📝 License
 
 MIT — feel free to use this as a starting point for your own chatbot projects.
+
